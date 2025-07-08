@@ -1,0 +1,102 @@
+@startuml
+' ───── マクロ定義 ───────────────────────────────
+!define table(x)     class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+!define foreign_key(x) <i>x</i>
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+' ───── テーブル定義 ─────────────────────────────
+table(message) {
+  primary_key(id)        : INT
+  foreign_key(room_id)   : INT
+  sender_type            : ENUM
+  content                : VARCHAR(512)
+  image_path             : VARCHAR(512)
+  created_at             : DATETIME
+}
+
+table(questions) {
+  primary_key(id)        : INT
+  title                  : VARCHAR(255)
+  content                : TEXT
+  asker_type             : ENUM
+  image_path             : VARCHAR(512)
+  created_at             : DATETIME
+}
+
+table(assignments) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  description            : TEXT
+  creator_type           : ENUM
+  due_date               : DATE
+  created_at             : DATETIME
+  image_path             : VARCHAR(512)
+}
+
+table(deliverables) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  description            : TEXT
+  submitter_type         : ENUM
+  image_path             : VARCHAR(512)
+  file_path              : VARCHAR(512)
+  created_at             : DATETIME
+}
+
+table(calendar) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  description            : TEXT
+  schedule_type          : ENUM
+  related_type           : ENUM
+  foreign_key(related_id): INT
+  schedule_date          : DATE
+  created_at             : DATETIME
+}
+
+table(milestones) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  description            : TEXT
+  date                   : DATE
+  created_at             : DATETIME
+}
+
+table(tasks) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  description            : TEXT
+  assigned_to_name       : VARCHAR(255)
+  status                 : ENUM
+  due_date               : DATE
+  created_at             : DATETIME
+}
+
+table(announcements) {
+  primary_key(id)        : INT
+  titles                 : VARCHAR(255)
+  content                : TEXT
+  image_path             : VARCHAR(512)
+  poster_type            : ENUM
+  created_at             : DATETIME
+}
+
+table(requests) {
+  primary_key(id)        : INT
+  requester_type         : ENUM
+  target_type            : ENUM
+  target_id              : INT
+  content                : TEXT
+  created_at             : DATETIME
+}
+
+' ───── リレーション（カレンダー ⇔ 関連テーブル） ─────
+calendar <== tasks
+calendar <== milestones
+calendar <== announcements
+
+
+@enduml
