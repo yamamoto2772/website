@@ -2,7 +2,7 @@
 // データベース設定
 define('DB_HOST', 'mysql325.phy.lolipop.lan');
 define('DB_NAME', 'LAA1617951-team4');
-define('DB_USER', '	LAA1617951');     // ← ユーザー名に書き換えてください
+define('DB_USER', 'LAA1617951');     // ← ユーザー名に書き換えてください
 define('DB_PASS', 'passwd');     // ← パスワードに書き換えてください
 
 // DSN（Data Source Name）
