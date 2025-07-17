@@ -1,5 +1,4 @@
-@startuml
-' ───── マクロ定義 ───────────────────────────────
+@startuml name
 !define table(x)     class x << (T,#FFAAAA) >>
 !define primary_key(x) <u>x</u>
 !define foreign_key(x) <i>x</i>
@@ -7,8 +6,7 @@
 left to right direction
 skinparam classAttributeIconSize 0
 
-' ───── テーブル定義 ─────────────────────────────
-table(message) {
+table(チャット) {
   primary_key(id)        : INT
   foreign_key(room_id)   : INT
   sender_type            : ENUM
@@ -17,7 +15,7 @@ table(message) {
   created_at             : DATETIME
 }
 
-table(questions) {
+table(質問) {
   primary_key(id)        : INT
   title                  : VARCHAR(255)
   content                : TEXT
@@ -26,7 +24,7 @@ table(questions) {
   created_at             : DATETIME
 }
 
-table(assignments) {
+table(課題) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   description            : TEXT
@@ -36,7 +34,7 @@ table(assignments) {
   image_path             : VARCHAR(512)
 }
 
-table(deliverables) {
+table(成果物) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   description            : TEXT
@@ -46,18 +44,18 @@ table(deliverables) {
   created_at             : DATETIME
 }
 
-table(calendar) {
+table(カレンダー) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   description            : TEXT
-  schedule_type          : ENUM
+  scheカレンダー  : ENUM
   related_type           : ENUM
   foreign_key(related_id): INT
   schedule_date          : DATE
   created_at             : DATETIME
 }
 
-table(milestones) {
+table(マイルストーン) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   description            : TEXT
@@ -65,7 +63,7 @@ table(milestones) {
   created_at             : DATETIME
 }
 
-table(tasks) {
+table(タスク) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   description            : TEXT
@@ -75,7 +73,7 @@ table(tasks) {
   created_at             : DATETIME
 }
 
-table(announcements) {
+table(お知らせ) {
   primary_key(id)        : INT
   titles                 : VARCHAR(255)
   content                : TEXT
@@ -84,7 +82,7 @@ table(announcements) {
   created_at             : DATETIME
 }
 
-table(requests) {
+table(要望) {
   primary_key(id)        : INT
   requester_type         : ENUM
   target_type            : ENUM
@@ -93,10 +91,10 @@ table(requests) {
   created_at             : DATETIME
 }
 
-' ───── リレーション（カレンダー ⇔ 関連テーブル） ─────
-calendar <== tasks
-calendar <== milestones
-calendar <== announcements
+
+カレンダー <== タスク
+カレンダー <== マイルストーン
+カレンダー <== お知らせ
 
 
 @enduml
