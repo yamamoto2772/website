@@ -62,6 +62,24 @@
       padding: 1em;
       overflow-y: auto;
     }
+
+     #scrollTopBtn {
+      position: fixed;
+      bottom: 30px;
+      right: 50px;
+      display: none;               
+      padding: 20px;
+      font-size: 28px;
+      background-color: #4a68d1;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      width: 70px;
+      height: 70px;
+      
+}
   </style>
 </head>
 <body>
@@ -75,7 +93,7 @@
 
   <nav>
     <button onclick="loadPage('home.html')">ワークスペーストップ</button>
-    <button onclick="loadPage('question.html')">質問フォーム</button>
+    <button onclick="loadPage('question.php')">質問フォーム</button>
     <button onclick="loadPage('chat.html')">チャットフォーム</button>
     <button onclick="loadPage('task.html')">課題提示フォーム</button>
     <button onclick="loadPage('result.html')">成果物提出フォーム</button>
@@ -87,6 +105,7 @@
     <h2></h2>
     <p></p>
   </main>
+  <button id="scrollTopBtn" onclick="scrollToTop()">↑</button>
 
   <script>
     function loadPage(page) {
@@ -102,6 +121,22 @@
           document.getElementById('main-content').innerHTML =
             `<p style="color:red;">${page} の読み込みに失敗しました。</p>`;
         });
+    }
+
+    //スクロール関連
+   const mainContent = document.getElementById('main-content');
+    const btn = document.getElementById('scrollTopBtn');
+
+    mainContent.addEventListener('scroll', function () {
+      if (mainContent.scrollTop > 200) {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+
+    function scrollToTop() {
+      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
 
