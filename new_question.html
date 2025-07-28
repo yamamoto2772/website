@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>新しい質問を作成</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 2em;
+    }
+
+    h2 {
+      background-color: #3f51b5;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 1.3em;
+      margin-bottom: 30px;
+      width: fit-content;
+    }
+
+    form {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 95%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      resize: none;
+      height: 120px;
+    }
+
+    input[type="file"] {
+      margin-top: 8px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4a68d1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #3a56b1;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>新しい質問を作成</h2>
+
+  <form action="/team4/website/insert_question.php" method="POST" enctype="multipart/form-data">
+    <label for="title">タイトル</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="content">内容</label>
+    <textarea id="content" name="content" required></textarea>
+
+    <label for="image">画像（任意）</label>
+    <input type="file" id="image" name="image">
+
+    <button type="submit">投稿する</button>
+  </form>
+
+</body>
+</html>

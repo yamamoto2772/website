@@ -88,8 +88,8 @@
 
 </style>
 
-    </style>
     <header><h2>質問フォーム</h2></header>
+    
     <br>
     <div class="new_question_button">
         <button onclick="loadPage('new_question.html')">新しい質問を作成する</button>    
@@ -104,23 +104,6 @@
     <br>
   <?php endforeach; ?>
 
-    <script>
-    function loadPage(page) {
-      fetch(page)
-        .then(response => {
-          if (!response.ok) throw new Error("読み込み失敗");
-          return response.text();
-        })
-        .then(html => {
-          document.getElementById('main-content').innerHTML = html;
-        })
-        .catch(error => {
-          document.getElementById('main-content').innerHTML =
-            `<p style="color:red;">${page} の読み込みに失敗しました。</p>`;
-        });
-    }
-
     
-  </script>
 </body>
 </html>
