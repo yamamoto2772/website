@@ -3,27 +3,28 @@ require_once 'config.php';
 
 // ワークスペース名取得
 $workspaceName = '未指定のワークスペース';
+$workspaceId = 0;
 if (isset($_GET['id'])) {
-    $id = (int)$_GET['id'];
+    $workspaceId = (int)$_GET['id'];
     $stmt = $pdo->prepare("SELECT name FROM workspaces WHERE id = :id");
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $workspaceId, PDO::PARAM_INT);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($result) {
-        $workspaceName = htmlspecialchars($result['name'], ENT_QUOTES, 'UTF-8');
-    } else {
-        $workspaceName = '（存在しないワークスペース）';
+        $workspaceName = $result['name'];
     }
 }
 
-// マイルストーン全件取得
-$milestoneStmt = $pdo->query("SELECT * FROM milestones ORDER BY 日付 ASC");
-$allMilestones = $milestoneStmt->fetchAll(PDO::FETCH_ASSOC);
-
+// 今の年月
 $year = date('Y');
 $month = date('n');
 $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
+// milestones 全件取得（workspace_id はないので全件取得）
+$milestoneStmt = $pdo->query("SELECT * FROM milestones ORDER BY 日付");
+$allMilestones = $milestoneStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// 日付で絞り込む関数
 function getMilestonesByDate($milestones, $date) {
     $list = [];
     foreach ($milestones as $m) {
@@ -38,7 +39,7 @@ function getMilestonesByDate($milestones, $date) {
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>企業学生間共有フォーム</title>
+  <title>企業学生間共有フォーム - <?= htmlspecialchars($workspaceName) ?></title>
   <style>
     body {
       margin: 0;
@@ -51,17 +52,16 @@ function getMilestonesByDate($milestones, $date) {
       grid-template-rows: auto 1fr;
       height: 100vh;
     }
-   header {
-  grid-area: header;
-  background-color: #3f51b5;
-  color: white;
-  padding: 0.5em 1em; /* 上下のpaddingを減らす */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9em; /* フォントサイズを少し小さく */
-}
-
+    header {
+      grid-area: header;
+      background-color: #3f51b5;
+      color: white;
+      padding: 0.5em 1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9em;
+    }
     nav {
       grid-area: sidebar;
       background-color: #f8f9ff;
@@ -71,19 +71,7 @@ function getMilestonesByDate($milestones, $date) {
       flex-direction: column;
       gap: 12px;
     }
-    .button{
-      background-color: #3f51b5;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 12px 20px;
-      font-size: 1em;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.25s ease;
-      text-align: left;
-    }
-    nav button {
+    nav button, .button {
       background-color: #3f51b5;
       color: white;
       border: none;
@@ -96,7 +84,9 @@ function getMilestonesByDate($milestones, $date) {
       text-align: left;
     }
     nav button:hover,
-    nav button:focus {
+    nav button:focus,
+    .button:hover,
+    .button:focus {
       background-color: #2c387e;
       outline: none;
       box-shadow: 0 0 8px rgba(63, 81, 181, 0.7);
@@ -137,45 +127,36 @@ function getMilestonesByDate($milestones, $date) {
       min-height: 80px;
       font-size: 0.75em;
       position: relative;
+      cursor: pointer;
+      background: white;
     }
     .calendar-day.outside-month { background-color: #f0f0f0; color: #999; }
     .calendar-day strong { display: block; margin-bottom: 4px; }
-    .milestone-item { font-size: 0.7em; margin: 2px; background: #e0e0ff; padding: 2px 4px; border-radius: 4px; }
+    .milestone-item {
+      font-size: 0.7em;
+      margin: 2px;
+      background: #e0e0ff;
+      padding: 2px 4px;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: default;
+    }
 
-    .milestone-view {
-      border-top: 4px solid black;
-      height: 200px;
-      margin: 40px auto;
-      position: relative;
-      max-width: 720px;
-    }
-    .milestone-point {
-      position: absolute;
-      width: 120px;
-      text-align: center;
-    }
-    .milestone-point .box {
-      width: 100px;
-      height: 40px;
-      background: #e0f7fa;
-      border: 1px solid #333;
-      margin-bottom: 10px;
-    }
-    .milestone-point .line {
-      width: 2px;
-      height: 40px;
-      background: #000;
-      margin: 0 auto;
-    }
     .milestone-table {
       margin: 30px auto;
       width: 90%;
       border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
     }
     .milestone-table th, .milestone-table td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: center;
+      font-size: 0.9em;
     }
     .toggle-buttons {
       text-align: center;
@@ -184,12 +165,61 @@ function getMilestonesByDate($milestones, $date) {
     .toggle-buttons button {
       margin: 0 10px;
       padding: 10px 20px;
+      cursor: pointer;
     }
   </style>
   <script>
+    function loadPage(page) {
+      fetch(page)
+        .then(response => {
+          if (!response.ok) throw new Error("読み込み失敗");
+          return response.text();
+        })
+        .then(html => {
+          document.getElementById('main-content').innerHTML = html;
+        })
+        .catch(error => {
+          document.getElementById('main-content').innerHTML =
+            `<p style="color:red;">${page} の読み込みに失敗しました。</p>`;
+        });
+    }
+
+    //スクロール関連
+   const mainContent = document.getElementById('main-content');
+    const btn = document.getElementById('scrollTopBtn');
+
+    mainContent.addEventListener('scroll', function () {
+      if (mainContent.scrollTop > 200) {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+
+    function scrollToTop() {
+      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     function toggleView(viewId) {
-      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(viewId).classList.add('active');
+    }
+
+    function onDateClick(date) {
+      toggleView('milestones');
+
+      const rows = document.querySelectorAll('.milestone-row');
+      rows.forEach(row => {
+        row.style.display = row.dataset.date === date ? '' : 'none';
+      });
+
+      document.getElementById('milestone-title').textContent = date + ' のマイルストーン';
+    }
+
+    function showAllMilestones() {
+      toggleView('milestones');
+      const rows = document.querySelectorAll('.milestone-row');
+      rows.forEach(row => row.style.display = '');
+      document.getElementById('milestone-title').textContent = 'すべてのマイルストーン';
     }
   </script>
 </head>
@@ -198,13 +228,13 @@ function getMilestonesByDate($milestones, $date) {
 <header>
   <div>
     <h1>企業学生間共有フォーム</h1>
-    <p><?= $workspaceName ?> のワークスペース</p>
+    <p><?= htmlspecialchars($workspaceName) ?> のワークスペース</p>
   </div>
 </header>
 
 <nav>
-  <button onclick="location.href='workspace.php?id=<?= htmlspecialchars($_GET['id'] ?? 0) ?>'">ワークスペーストップ</button>
-  <button onclick="alert('質問フォームへ遷移')">質問フォーム</button>
+  <button onclick="location.href='workspace.php?id=<?= htmlspecialchars($workspaceId) ?>'">ワークスペーストップ</button>
+  <button onclick="loadPage('question.php')">質問フォーム</button>
   <button onclick="alert('チャットフォームへ遷移')">チャットフォーム</button>
   <button onclick="alert('課題提示フォームへ遷移')">課題提示フォーム</button>
   <button onclick="alert('成果物提出フォームへ遷移')">成果物提出フォーム</button>
@@ -215,7 +245,7 @@ function getMilestonesByDate($milestones, $date) {
 <main>
   <div class="toggle-buttons">
     <button onclick="toggleView('calendar')">カレンダー表示</button>
-    <button onclick="toggleView('milestones')">マイルストーン表示</button>
+    <button onclick="showAllMilestones()">マイルストーン表示</button>
   </div>
 
   <section id="calendar" class="view active">
@@ -225,6 +255,7 @@ function getMilestonesByDate($milestones, $date) {
         <?php foreach ($weekdays as $wd): ?>
           <div class='calendar-header'><?= $wd ?></div>
         <?php endforeach; ?>
+
         <?php
         $firstDay = strtotime("$year-$month-01");
         $startWeekday = (int)date('w', $firstDay);
@@ -238,11 +269,12 @@ function getMilestonesByDate($milestones, $date) {
           $dayNum = (int)date('j', $current);
           $isCurrentMonth = (date('Y-m', $current) === sprintf('%04d-%02d', $year, $month));
           $classes = 'calendar-day' . (!$isCurrentMonth ? ' outside-month' : '');
-          echo "<div class='{$classes}'><strong>{$dayNum}</strong>";
+          echo "<div class='{$classes}' onclick=\"onDateClick('{$dateStr}')\"><strong>{$dayNum}</strong>";
+
           $miles = getMilestonesByDate($allMilestones, $dateStr);
           foreach ($miles as $mile) {
             $title = htmlspecialchars($mile['タイトル']);
-            echo "<div class='milestone-item'>{$title}</div>";
+            echo "<div class='milestone-item' title='{$title}'>{$title}</div>";
           }
           echo "</div>";
         }
@@ -250,25 +282,34 @@ function getMilestonesByDate($milestones, $date) {
       </div>
     </div>
   </section>
+  <main id="main-content">
+    <h2></h2>
+    <p></p>
+  </main>
+  <button id="scrollTopBtn" onclick="scrollToTop()">↑</button>
+
 
   <section id="milestones" class="view">
-    <div class="milestone-view">
-      <div class="milestone-point" style="left: 10%">
-        <div class="box">マイルストーン1</div>
-        <div class="line"></div>
-      </div>
-      <div class="milestone-point" style="left: 40%">
-        <div class="box">マイルストーン2</div>
-        <div class="line"></div>
-      </div>
-      <div class="milestone-point" style="left: 70%">
-        <div class="box">マイルストーン3</div>
-        <div class="line"></div>
-      </div>
-    </div>
+    <h2 id="milestone-title">すべてのマイルストーン</h2>
     <table class="milestone-table">
-      <tr><th>日付</th><th>マイルストーン</th><th>高さと方向</th><th>担当者</th><th>ステータス</th></tr>
-      <tr><td>1/26</td><td>マイルストーン1</td><td>+5</td><td>山田太郎</td><td>準備中</td></tr>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>タイトル</th>
+          <th>詳細</th>
+          <th>マイルストーンID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($allMilestones as $ms): ?>
+          <tr class="milestone-row" data-date="<?= htmlspecialchars($ms['日付']) ?>">
+            <td><?= htmlspecialchars($ms['日付']) ?></td>
+            <td><?= htmlspecialchars($ms['タイトル']) ?></td>
+            <td><?= htmlspecialchars($ms['詳細']) ?></td>
+            <td><?= htmlspecialchars($ms['マイルストーンID']) ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
     </table>
   </section>
 </main>
