@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>企業学生間共有フォーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-image: url('../img/background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      width: 770px;
+      height: 480px;
+      padding: 40px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .title {
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40%;
+      height: 60px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      background-color: white;
+    }
+
+    .button {
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background: #e2edf7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      color: black;
+      text-decoration: none;
+    }
+
+    .button:hover {
+      background: #d0d0d0;
+      transform: scale(1.03);
+    }
+
+    .company {
+      top: 180px;
+      left: 110px;
+    }
+
+    .student {
+      top: 180px;
+      left: 440px;
+    }
+
+    .back {
+      position: absolute;
+      top: 430px;
+      left: 335px;
+      width: 100px;
+      height: 30px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0fe;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-decoration: none;
+      color: black;
+    }
+
+    .back:hover {
+      background: black;
+      color: #eee;
+    }
+
+    a:link,
+    a:visited,
+    a:hover,
+    a:active {
+      color: black;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">企業学生間共有フォーム</div>
+
+    <a href="top.php" class="button company" onclick="setRole('company')">
+      企業として<br>作業を開始する
+    </a>
+
+    <a href="top.php" class="button student" onclick="setRole('student')">
+      学生として<br>作業を開始する
+    </a>
+
+  </div>
+  <script>
+  function setRole(role) {
+    localStorage.setItem("userRole", role); // 'student' or 'company' を保存
+  }
+</script>
+</body>
+</html>
