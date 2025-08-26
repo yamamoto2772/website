@@ -3,6 +3,7 @@ require_once("../localhost/db_open.php");
 
 $stmt = $pdo->query("SELECT workspaces_id, name FROM workspaces ORDER BY created_at DESC");
 $workspaces = $stmt->fetchAll();
+$admin = ($_COOKIE['admin'] ?? '') === 'true';
 ?>
 
 <!DOCTYPE html>
@@ -16,7 +17,7 @@ $workspaces = $stmt->fetchAll();
       font-family: sans-serif;
       margin: 0;
       padding: 0;
-      background: #ccc;
+      background: #f1f5fb;
     }
 
     .header {
@@ -25,16 +26,15 @@ $workspaces = $stmt->fetchAll();
       gap: 40px;
       padding: 30px 0;
       border-bottom: 2px solid #000;
-      background-image: url('img/background.png');
+      background-image: url('../img/background.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-color: #7abdeaff;
     }
 
     .button {
       text-decoration: none;
-      color: #000;
+      color: #000000;
       background: #ffffff;
       border: 2px solid #000;
       padding: 15px 30px;
@@ -44,28 +44,41 @@ $workspaces = $stmt->fetchAll();
       width: 350px;
       text-align: center;
       cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .container {
       max-width: 95%;
       margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border: 2px solid #000;
+      padding: 30px;
+      background: #ffffff;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .create-workspace {
-      display: block;
-      width: 100%;
-      text-align: center;
-      border: 2px solid #000;
-      border-radius: 10px;
-      padding: 15px;
+    .create-container {
+      display: flex;
+      justify-content: center;
       margin-bottom: 30px;
+    }
+
+    .create-workspace-link {
+      text-align: center;
+      padding: 20px 40px;
+      background-color: #ffffff;
+      color: #000;
+      text-decoration: none;
+      font-size: 18px;
       font-weight: bold;
-      background: #ffffff;
-      cursor: pointer;
-      font-size: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    .create-workspace-link:hover {
+      background-color: #f0f0f0;
     }
 
     .workspace-list {
@@ -108,6 +121,10 @@ $workspaces = $stmt->fetchAll();
       background-color: #005fa3;
     }
 
+    .delete-btn {
+      background-color: red;
+    }
+
     .admin-controls {
       margin-top: 20px;
       display: flex;
@@ -141,11 +158,8 @@ $workspaces = $stmt->fetchAll();
       opacity: 1;
     }
 
-    .delete-btn {
-      background-color: red;
-    }
-
     #scrollTopBtn {
+      display: none; /* ← 初期状態は非表示 */
       position: fixed;
       bottom: 20px;
       right: 20px;
@@ -153,7 +167,6 @@ $workspaces = $stmt->fetchAll();
       height: 56px;
       background: #ff8c00;
       color: #fff;
-      display: flex;
       align-items: center;
       justify-content: center;
       font-size: 22px;
@@ -179,15 +192,18 @@ $workspaces = $stmt->fetchAll();
   </header>
 
   <main class="container">
-    <a href="create-workspace.html"><button class="create-workspace">新規ワークスペース作成</button></a>
-
+    <div class="create-container">
+      <a href="create-workspace.html" class="create-workspace-link">新規ワークスペース作成</a>
+    </div>
     <ul class="workspace-list" id="workspace-list">
       <?php foreach ($workspaces as $ws): ?>
         <li class="workspace-card">
           <div class="workspace-title"><?= htmlspecialchars($ws['name']) ?></div>
           <div class="workspace-actions">
             <a href="workspace.php?id=<?= $ws['workspaces_id'] ?>">開く</a>
-            <a class="delete-btn" href="#" data-id="<?= $ws['workspaces_id'] ?>">削除</a>
+            <?php if ($admin): ?>
+              <a class="delete-btn" href="#" data-id="<?= $ws['workspaces_id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>
+            <?php endif; ?>
           </div>
         </li>
       <?php endforeach; ?>
@@ -198,18 +214,20 @@ $workspaces = $stmt->fetchAll();
     </div>
 
     <button id="scrollTopBtn" aria-label="ページの先頭へ戻る">↑</button>
-
   </main>
 
   <script>
-    const adminBtn = document.getElementById("admin-btn");
-    const adminFunctions = document.getElementById("admin-functions");
     const ADMIN_PASSWORD = "admin123";
 
     function checkAdminMode() {
       const isAdmin = localStorage.getItem("admin") === "true";
+      const adminBtn = document.getElementById("admin-btn");
+      const adminControls = document.getElementById("admin-functions");
+
       if (isAdmin) {
-        adminFunctions.style.display = "flex";
+        adminControls.style.display = "flex";
+        adminBtn.textContent = "管理者モードを終了する";
+        adminBtn.addEventListener("click", logoutAdmin);
       } else {
         document.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "none");
       }
@@ -224,7 +242,7 @@ $workspaces = $stmt->fetchAll();
       }
     }
 
-    adminBtn.addEventListener("click", () => {
+    document.getElementById("admin-btn").addEventListener("click", () => {
       const input = prompt("管理者パスワードを入力してください：");
       if (input === ADMIN_PASSWORD) {
         localStorage.setItem("admin", "true");
@@ -236,48 +254,66 @@ $workspaces = $stmt->fetchAll();
       }
     });
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const message = localStorage.getItem("notification");
-      if (message) {
-        showToast(message);
-        localStorage.removeItem("notification");
-      }
-      checkAdminMode();
-    });
-
     function showToast(message) {
       const toast = document.createElement("div");
       toast.className = "toast";
       toast.textContent = message;
       document.body.appendChild(toast);
 
-      setTimeout(() => {
-        toast.classList.add("show");
-      }, 100);
-
+      setTimeout(() => toast.classList.add("show"), 100);
       setTimeout(() => {
         toast.classList.remove("show");
-        setTimeout(() => {
-          document.body.removeChild(toast);
-        }, 500);
+        setTimeout(() => toast.remove(), 500);
       }, 3000);
     }
 
-    document.getElementById('scrollTopBtn')
-      .addEventListener('click', () =>
-        window.scrollTo({ top: 0, behavior: 'smooth' }));
+    window.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem("notification")) {
+        showToast(localStorage.getItem("notification"));
+        localStorage.removeItem("notification");
+      }
+      checkAdminMode();
+    });
 
-    // 仮削除処理
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', function (e) {
+    document.getElementById("scrollTopBtn")
+      .addEventListener("click", () =>
+        window.scrollTo({ top: 0, behavior: "smooth" }));
+
+    // スクロールして一定以上でボタン表示
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        scrollTopBtn.style.display = "flex";
+      } else {
+        scrollTopBtn.style.display = "none";
+      }
+    });
+
+    // 削除処理
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", e => {
         e.preventDefault();
-        const id = this.getAttribute('data-id');
-        if (confirm(`ワークスペース ID:${id} を削除しますか？（処理未実装）`)) {
-          alert(`ID:${id} を削除しました（仮）`);
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        if (confirm(`ワークスペース 「${name}」 を削除しますか？`)) {
+          fetch("delete_workspace.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              localStorage.setItem("notification", `ワークスペース「${name}」を削除しました`);
+              location.reload();
+            } else {
+              alert(data.error || "削除に失敗しました");
+            }
+          })
+          .catch(() => alert("通信エラーが発生しました"));
         }
       });
     });
   </script>
-
 </body>
 </html>
