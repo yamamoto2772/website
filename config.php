@@ -1,9 +1,13 @@
 <?php
 // データベース設定
-define('DB_HOST', 'mysql325.phy.lolipop.lan');
-define('DB_NAME', 'LAA1617951-team4');
-define('DB_USER', 'LAA1617951');     // ← ユーザー名に書き換えてください
-define('DB_PASS', 'passwd');     // ← パスワードに書き換えてください
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'team4');            // データベース名（phpMyAdminで作成した名前）
+define('DB_USER', 'root');             // 通常は 'root'
+define('DB_PASS', ''); 
+//define('DB_HOST', 'mysql325.phy.lolipop.lan');
+// define('DB_NAME', 'team4');
+// define('DB_USER', 'LAA1617951');     // ← ユーザー名に書き換えてください
+// define('DB_PASS', 'passwd');     // ← パスワードに書き換えてください
 
 // DSN（Data Source Name）
 $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
