@@ -17,7 +17,7 @@ if (!$id || !is_numeric($id)) {
 }
 
 try {
-  $stmt = $pdo->prepare("DELETE FROM workspaces WHERE workspaces_id = ?");
+  $stmt = $pdo->prepare("DELETE FROM workspaces WHERE id = ?");
   $stmt->execute([$id]);
 
   echo json_encode(["success" => true]);

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>企業学生間共有フォーム</title>
+  <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
+
   <style>
     * {
       box-sizing: border-box;
@@ -40,7 +42,7 @@
       transform: translateX(-50%);
       width: 40%;
       height: 60px;
-      border: 2px solid #333;
+      border: 2px solid #3f51b5;
       border-radius: 8px;
       display: flex;
       justify-content: center;
@@ -48,14 +50,16 @@
       font-size: 20px;
       font-weight: bold;
       text-align: center;
-      background-color: white;
+      background-color: #3f51b5;
+      color: white;
     }
 
     .button {
       position: absolute;
       width: 230px;
       height: 230px;
-      border: 2px solid #333;
+      border: none;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
       border-radius: 12px;
       background: #e2edf7;
       display: flex;
@@ -84,29 +88,6 @@
       left: 440px;
     }
 
-    .back {
-      position: absolute;
-      top: 430px;
-      left: 335px;
-      width: 100px;
-      height: 30px;
-      border: 2px solid #333;
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f0f0fe;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.3s;
-      text-decoration: none;
-      color: black;
-    }
-
-    .back:hover {
-      background: black;
-      color: #eee;
-    }
 
     a:link,
     a:visited,

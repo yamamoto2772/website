@@ -1,7 +1,7 @@
 <?php
 require_once("../localhost/db_open.php");
 
-$stmt = $pdo->query("SELECT workspaces_id, name FROM workspaces ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT id, name FROM workspaces ORDER BY created_at DESC");
 $workspaces = $stmt->fetchAll();
 $admin = ($_COOKIE['admin'] ?? '') === 'true';
 ?>
@@ -12,24 +12,37 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>トップページ</title>
+  <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
+
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 0;
-      background: #f1f5fb;
-    }
-
-    .header {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      padding: 30px 0;
-      border-bottom: 2px solid #000;
       background-image: url('../img/background.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30px 40px;
+      border-bottom: 2px solid #000;
+      background-color: #3f51b5;
+    }
+
+    .header-left {
+      display: flex;
+      gap: 40px;
+      color: white;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 16px;
     }
 
     .button {
@@ -37,18 +50,25 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
       color: #000000;
       background: #ffffff;
       border: 2px solid #000;
-      padding: 15px 30px;
+      padding: 12px 20px;
       border-radius: 10px;
+      border-color: #3f51b5;
       font-weight: bold;
-      font-size: 16px;
-      width: 350px;
+      font-size: 15px;
       text-align: center;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+      min-width: 140px;
+      max-width: 200px;
+    }
+
+    .button:hover {
+      background-color: #ddd;
     }
 
     .container {
-      max-width: 95%;
+      max-width: 70%;
       margin: 40px auto;
       padding: 30px;
       background: #ffffff;
@@ -61,6 +81,8 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
       display: flex;
       justify-content: center;
       margin-bottom: 30px;
+      border: none;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
     .create-workspace-link {
@@ -124,6 +146,19 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
     .delete-btn {
       background-color: red;
     }
+    
+    .edit-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .edit-btn:hover {
+      background-color: #388e3c;
+    }
 
     .admin-controls {
       margin-top: 20px;
@@ -135,9 +170,14 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
       background-color: #ddd;
       padding: 10px 20px;
       font-size: 14px;
-      border: 2px solid #333;
+      border: none;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
       cursor: pointer;
+    }
+
+    .logout-btn:hover{
+      background-color: #bdbdbd
     }
 
     .toast {
@@ -159,7 +199,7 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
     }
 
     #scrollTopBtn {
-      display: none; /* ← 初期状態は非表示 */
+      display: none;
       position: fixed;
       bottom: 20px;
       right: 20px;
@@ -187,10 +227,15 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
 <body>
 
   <header class="header">
-    <a class="button">企業学生間共有フォーム</a>
-    <a href="#" class="button" id="admin-btn">管理者として作業を開始する</a>
+    <div class="header-left">
+      <h2>企業学生間共有フォーム</h2>
+    </div>
+    <div class="header-right">
+      <a href="#" class="button" id="admin-btn">管理者として作業を開始する</a>
+      <a href="sentaku.html" class="button return-btn">選択に戻る</a>
+    </div>
   </header>
-
+    <br>
   <main class="container">
     <div class="create-container">
       <a href="create-workspace.html" class="create-workspace-link">新規ワークスペース作成</a>
@@ -200,9 +245,10 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
         <li class="workspace-card">
           <div class="workspace-title"><?= htmlspecialchars($ws['name']) ?></div>
           <div class="workspace-actions">
-            <a href="workspace.php?id=<?= $ws['workspaces_id'] ?>">開く</a>
+            <a href="workspace.php?id=<?= $ws['id'] ?>">開く</a>
             <?php if ($admin): ?>
-              <a class="delete-btn" href="#" data-id="<?= $ws['workspaces_id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>
+              <a class="edit-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">編集</a>
+              <a class="delete-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>
             <?php endif; ?>
           </div>
         </li>
@@ -217,79 +263,71 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
   </main>
 
   <script>
-    const ADMIN_PASSWORD = "admin123";
+  const ADMIN_PASSWORD = "admin123";
 
-    function checkAdminMode() {
-      const isAdmin = localStorage.getItem("admin") === "true";
-      const adminBtn = document.getElementById("admin-btn");
-      const adminControls = document.getElementById("admin-functions");
+  function checkAdminMode() {
+    const isAdmin = localStorage.getItem("admin") === "true";
+    const adminBtn = document.getElementById("admin-btn");
+    const adminControls = document.getElementById("admin-functions");
 
-      if (isAdmin) {
-        adminControls.style.display = "flex";
-        adminBtn.textContent = "管理者モードを終了する";
-        adminBtn.addEventListener("click", logoutAdmin);
-      } else {
-        document.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "none");
-      }
+    if (isAdmin) {
+      adminControls.style.display = "flex";
+      adminBtn.textContent = "管理者モードを終了する";
+    } else {
+      document.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "none");
+      document.querySelectorAll(".edit-btn").forEach(btn => btn.style.display = "none");
+    }
+  }
+
+  function logoutAdmin() {
+    if (confirm("本当に管理者モードを終了しますか？")) {
+      localStorage.removeItem("admin");
+      document.cookie = "admin=false; path=/";
+      alert("管理者モードを終了しました。");
+      location.reload();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    checkAdminMode();
+
+    // 管理者ボタンの切替処理
+    const adminBtn = document.getElementById("admin-btn");
+    adminBtn.addEventListener("click", () => {
+  const isAdmin = localStorage.getItem("admin") === "true";
+  if (isAdmin) {
+    logoutAdmin();
+  } else {
+    const input = prompt("管理者パスワードを入力してください");
+    if (input === null) return;
+    if (input === ADMIN_PASSWORD) {
+      localStorage.setItem("admin", "true");
+      document.cookie = "admin=true; path=/";
+      alert("管理者モードが有効になりました。");
+      location.reload();
+    } else {
+      alert("パスワードが違います。");
+    }
+  }
+});
+
+
+    // トースト通知
+    if (localStorage.getItem("notification")) {
+      showToast(localStorage.getItem("notification"));
+      localStorage.removeItem("notification");
     }
 
-    function logoutAdmin() {
-      if (confirm("本当に管理者モードを終了しますか？")) {
-        localStorage.removeItem("admin");
-        document.cookie = "admin=false; path=/";
-        alert("管理者モードを終了しました。");
-        location.reload();
-      }
-    }
+    // スクロールトップボタン
+    document.getElementById("scrollTopBtn").addEventListener("click", () =>
+      window.scrollTo({ top: 0, behavior: "smooth" }));
 
-    document.getElementById("admin-btn").addEventListener("click", () => {
-      const input = prompt("管理者パスワードを入力してください：");
-      if (input === ADMIN_PASSWORD) {
-        localStorage.setItem("admin", "true");
-        document.cookie = "admin=true; path=/";
-        alert("管理者モードが有効になりました。");
-        location.reload();
-      } else {
-        alert("パスワードが違います。");
-      }
-    });
-
-    function showToast(message) {
-      const toast = document.createElement("div");
-      toast.className = "toast";
-      toast.textContent = message;
-      document.body.appendChild(toast);
-
-      setTimeout(() => toast.classList.add("show"), 100);
-      setTimeout(() => {
-        toast.classList.remove("show");
-        setTimeout(() => toast.remove(), 500);
-      }, 3000);
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      if (localStorage.getItem("notification")) {
-        showToast(localStorage.getItem("notification"));
-        localStorage.removeItem("notification");
-      }
-      checkAdminMode();
-    });
-
-    document.getElementById("scrollTopBtn")
-      .addEventListener("click", () =>
-        window.scrollTo({ top: 0, behavior: "smooth" }));
-
-    // スクロールして一定以上でボタン表示
-    const scrollTopBtn = document.getElementById("scrollTopBtn");
     window.addEventListener("scroll", () => {
-      if (window.scrollY > 300) {
-        scrollTopBtn.style.display = "flex";
-      } else {
-        scrollTopBtn.style.display = "none";
-      }
+      const scrollTopBtn = document.getElementById("scrollTopBtn");
+      scrollTopBtn.style.display = window.scrollY > 300 ? "flex" : "none";
     });
 
-    // 削除処理
+    // 削除ボタンの処理
     document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", e => {
         e.preventDefault();
@@ -301,19 +339,62 @@ $admin = ($_COOKIE['admin'] ?? '') === 'true';
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id })
           })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              localStorage.setItem("notification", `ワークスペース「${name}」を削除しました`);
-              location.reload();
-            } else {
-              alert(data.error || "削除に失敗しました");
-            }
-          })
-          .catch(() => alert("通信エラーが発生しました"));
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                localStorage.setItem("notification", `ワークスペース「${name}」を削除しました`);
+                location.reload();
+              } else {
+                alert(data.error || "削除に失敗しました");
+              }
+            })
+            .catch(() => alert("通信エラーが発生しました"));
         }
       });
     });
-  </script>
+
+    // 編集ボタンの処理
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        const id = btn.dataset.id;
+        const oldName = btn.dataset.name;
+        const newName = prompt(`「${oldName}」の新しい名前を入力してください：`, oldName);
+        if (newName && newName !== oldName) {
+          fetch("update_workspace.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, name: newName })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                localStorage.setItem("notification", `ワークスペース名を「${oldName}」から「${newName}」に変更しました`);
+                location.reload();
+              } else {
+                alert(data.error || "更新に失敗しました");
+              }
+            })
+            .catch(() => alert("通信エラーが発生しました"));
+        }
+      });
+    });
+  });
+
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add("show"), 100);
+    setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => toast.remove(), 500);
+    }, 3000);
+  }
+</script>
+
+
 </body>
 </html>

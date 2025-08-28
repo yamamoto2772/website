@@ -4,12 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>新規ワークスペース作成</title>
+  <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
+
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 0;
-      background: #eef3f9;
+      background-image: url('../img/background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -79,8 +84,10 @@
 
   <div class="form-container">
     <h2>新規ワークスペース作成</h2>
+    
     <form action="insert_workspace.php" method="post" id="workspaceForm">
-      <label for="name">ワークスペース名:</label>
+      <label for="name">ワークスペース名</label>
+      <br>
       <input type="text" name="name" id="name" required>
       <button type="submit">作成</button>
     </form>

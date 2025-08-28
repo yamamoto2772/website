@@ -6,7 +6,7 @@ if (!ctype_digit($workspace_id)) {
   exit("不正なIDです");
 }
 
-$stmt = $pdo->prepare("SELECT * FROM workspaces WHERE workspaces_id = ?");
+$stmt = $pdo->prepare("SELECT * FROM workspaces WHERE id = ?");
 $stmt->execute([$workspace_id]);
 $workspace = $stmt->fetch();
 
@@ -20,6 +20,8 @@ if (!$workspace) {
 <head>
   <meta charset="UTF-8">
   <title><?= htmlspecialchars($workspace['name']) ?> | 企業学生間共有フォーム</title>
+  <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
+
   <style>
     body {
       margin: 0;
