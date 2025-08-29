@@ -1,0 +1,77 @@
+<style>
+/* new_question.html専用のスタイル */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* パディングを含めて幅を計算 */
+}
+
+input[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #4a68d1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #3a56b1;
+}
+
+.back_button_container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back_button_container button {
+    padding: 10px 20px;
+    background-color: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.back_button_container button:hover {
+    background-color: #bbb;
+}
+</style>
+
+<h2>新しい質問を作成</h2>
+<form action="save_question.php" method="POST">
+    <label for="title">タイトル:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="content">質問内容:</label>
+    <textarea id="content" name="content" rows="10" required></textarea>
+
+    <input type="submit" value="送信">
+</form>
+
+<div class="back_button_container">
+    <button onclick="loadPage('question.php')">質問一覧に戻る</button>
+</div>
