@@ -6,11 +6,7 @@
   <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -73,48 +69,78 @@
       text-decoration: none;
     }
 
-    .button:hover {
-      background: #d0d0d0;
-      transform: scale(1.03);
-    }
+    .button:hover { background: #d0d0d0; transform: scale(1.03); }
+    .company { top: 180px; left: 110px; }
+    .student { top: 180px; left: 440px; }
 
-    .company {
-      top: 180px;
-      left: 110px;
-    }
-
-    .student {
-      top: 180px;
-      left: 440px;
-    }
-
-
-    a:link,
-    a:visited,
-    a:hover,
-    a:active {
-      color: black;
-      text-decoration: none;
-    }
+    a:link, a:visited, a:hover, a:active { color: black; text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="title">企業学生間共有フォーム</div>
 
-    <a href="top.php" class="button company" onclick="setRole('company')">
+    <!-- JSでPOSTするので href="#" -->
+    <a href="#" class="button company" id="start-company">
       企業として<br>作業を開始する
     </a>
 
-    <a href="top.php" class="button student" onclick="setRole('student')">
+    <a href="#" class="button student" id="start-student">
       学生として<br>作業を開始する
     </a>
 
+    <!-- セッションに役割をセットするためのPOSTフォーム -->
+    <form id="role-form" action="./set_role.php" method="post" style="display:none;">
+      <input type="hidden" name="role" id="role-input">
+    </form>
   </div>
+
   <script>
-  function setRole(role) {
-    localStorage.setItem("userRole", role); // 'student' or 'company' を保存
-  }
-</script>
+    // 選択→通知を積んでからサーバーへPOST（セッションにroleを保存）
+    function go(role, e){
+      e.preventDefault();
+      const label = role === 'company' ? '企業' : '学生';
+      localStorage.setItem("notification", `「${label}」として作業を開始します`);
+      localStorage.setItem("userRole", role); // 既存UI用（任意）
+
+      document.getElementById('role-input').value = role;
+      document.getElementById('role-form').submit();
+    }
+
+    document.getElementById('start-company').addEventListener('click', e => go('company', e));
+    document.getElementById('start-student').addEventListener('click', e => go('student', e));
+
+    // top.php から未選択で戻されたときの警告
+    document.addEventListener('DOMContentLoaded', () => {
+      const warn = localStorage.getItem('selectionWarning');
+      if (warn) {
+        showToast(warn, 'warn');
+        localStorage.removeItem('selectionWarning');
+      }
+    });
+
+    // 簡易トースト
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.style.position = 'fixed';
+      toast.style.top = '30px';
+      toast.style.right = '30px';
+      toast.style.padding = '12px 20px';
+      toast.style.borderRadius = '8px';
+      toast.style.color = '#fff';
+      toast.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity .3s';
+      toast.style.zIndex = '1000';
+      toast.style.background = type === 'warn' ? '#e53935' : '#007acc';
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => toast.style.opacity = '1');
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+  </script>
 </body>
 </html>

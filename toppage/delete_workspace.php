@@ -1,4 +1,21 @@
 <?php
+declare(strict_types=1);
+session_start();
+header('Content-Type: application/json; charset=utf-8');
+
+if (empty($_SESSION['is_admin'])) {
+  http_response_code(403);
+  echo json_encode(['success' => false, 'error' => 'forbidden']);
+  exit;
+}
+
+$csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
+  http_response_code(403);
+  echo json_encode(['success' => false, 'error' => 'invalid_csrf']);
+  exit;
+}
+
 require_once("../localhost/db_open.php");
 
 if ($_COOKIE['admin'] !== 'true') {
