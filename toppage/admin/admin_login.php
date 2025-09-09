@@ -4,7 +4,7 @@ session_start();
 
 /* すでに管理者ログイン済みならトップへ */
 if (!empty($_SESSION['is_admin'])) {
-  header('Location: top.php');
+  header('Location: ../top.php');
   exit;
 }
 ?>
@@ -20,7 +20,7 @@ if (!empty($_SESSION['is_admin'])) {
     body {
       font-family: sans-serif;
       margin: 0;
-      background-image: url('../img/background.png');
+      background-image: url('../../img/background.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -94,6 +94,18 @@ if (!empty($_SESSION['is_admin'])) {
 
     .msg { color: #e53935; margin-top: 10px; }
     .back-link { display: inline-block; margin-top: 14px; text-decoration: none; }
+
+      @media (max-width: 768px) {
+          main { padding: 24px 12px; align-items: center; }
+          .card { max-width: 480px; width: 100%; padding: 20px; }
+          input[type="password"], button { font-size: 16px; /* モバイルでの可読性 */ }
+          }
+      @media (max-width: 480px) {
+          .header { padding: 16px; }
+          .card h1 { font-size: 18px; }
+          button { padding: 12px; } /* タップ面積確保 */
+          }
+
   </style>
 </head>
 <body>
@@ -123,7 +135,7 @@ if (!empty($_SESSION['is_admin'])) {
         <button type="submit">ログイン</button>
       </form>
 
-      <a class="back-link" href="top.php">戻る</a>
+      <a class="back-link" href="../top.php">戻る</a>
 
       <?php if (!empty($_SESSION['login_error'])): ?>
         <div class="msg"><?= htmlspecialchars($_SESSION['login_error']) ?></div>

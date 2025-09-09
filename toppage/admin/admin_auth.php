@@ -18,7 +18,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
 echo "<script>
   localStorage.setItem('notification', '管理者モードが有効になりました');
-  location.href = 'top.php';
+  location.href = '../top.php';
 </script>";
 exit;
 ?>

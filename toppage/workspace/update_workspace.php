@@ -17,7 +17,7 @@ if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csr
   exit;
 }
 
-require_once("../localhost/db_open.php");
+require_once("../../localhost/db_open.php");
 
 $data = json_decode(file_get_contents("php://input"), true);
 $id = $data["id"] ?? null;

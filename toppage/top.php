@@ -8,27 +8,66 @@ if (empty($_SESSION['role'])) {
   exit;
 }
 
-/* 並べ替えキー（ホワイトリスト） */
+/* 並べ替えキー */
 $sort = $_GET['sort'] ?? ($_SESSION['ws_sort'] ?? 'newest');
 $sortMap = [
-  'newest'    => 'created_at DESC',  // 新しい順（デフォルト）
-  'oldest'    => 'created_at ASC',   // 古い順
-  'name_asc'  => 'name ASC',         // 名前 A→Z
-  'name_desc' => 'name DESC',        // 名前 Z→A
+  'newest'    => 'created_at DESC',
+  'oldest'    => 'created_at ASC',
+  'name_asc'  => 'name ASC',
+  'name_desc' => 'name DESC',
 ];
 if (!isset($sortMap[$sort])) $sort = 'newest';
 $_SESSION['ws_sort'] = $sort;
-
 $orderBy = $sortMap[$sort];
 
-/* データ取得（安全な ORDER BY のみ差し込み） */
-$sql = "SELECT id, name, created_at FROM workspaces ORDER BY $orderBy";
-$stmt = $pdo->query($sql);
+/* 検索キーワード（部分一致） */
+$q = trim($_GET['q'] ?? '');
+$searchSql = '';
+$params = [];
+if ($q !== '') {
+  $searchSql = "WHERE name LIKE :q";
+  $params[':q'] = "%{$q}%";
+}
+
+/* ページング設定 */
+$perPage = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+
+/* 総件数取得（検索条件込み） */
+$countSql = "SELECT COUNT(*) FROM workspaces $searchSql";
+$stmt = $pdo->prepare($countSql);
+$stmt->execute($params);
+$total = (int)$stmt->fetchColumn();
+$totalPages = max(1, (int)ceil($total / $perPage));
+if ($page > $totalPages) $page = $totalPages;
+
+$offset = ($page - 1) * $perPage;
+
+/* データ取得（検索 + 並べ替え + ページング） */
+$sql = "SELECT id, name, created_at
+        FROM workspaces
+        $searchSql
+        ORDER BY $orderBy
+        LIMIT :limit OFFSET :offset";
+$stmt = $pdo->prepare($sql);
+foreach ($params as $k => $v) $stmt->bindValue($k, $v, PDO::PARAM_STR);
+$stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
+$stmt->execute();
 $workspaces = $stmt->fetchAll();
 
-/* 管理者・CSRF */
+/* 管理者 */
 $is_admin   = !empty($_SESSION['is_admin']);
 $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null;
+
+/* ページリンク生成のためのクエリ組み立て */
+function build_query(array $add = []) {
+  $base = $_GET;
+  unset($base['page']); 
+  $params = array_merge($base, $add);
+  return htmlspecialchars('?' . http_build_query($params), ENT_QUOTES, 'UTF-8');
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -42,152 +81,199 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
   <?php endif; ?>
 
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background-image: url('../img/background.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      min-height: 100vh;
-    }
+          body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+        min-height: 100vh;
+      }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 30px 40px;
-      border-bottom: 2px solid #000;
-      background-color: #3f51b5;
-      color: #fff;
-    }
-    .header-left { display: flex; gap: 24px; align-items: baseline; }
-    .role-badge { opacity: .85; font-size: 14px; }
+      /* ヘッダー */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        background: #3f51b5;
+        color: #fff;
+      }
+      .header-left { display: flex; gap: 20px; align-items: baseline; }
+      .role-badge { opacity: .85; font-size: 14px; }
 
-    .button {
-      text-decoration: none;
-      color: #000000;
-      background: #ffffff;
-      border: 2px solid #000;
-      padding: 12px 20px;
-      border-radius: 10px;
-      border-color: #3f51b5;
-      font-weight: bold;
-      font-size: 15px;
-      text-align: center;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      white-space: nowrap;
-      min-width: 140px;
-      max-width: 200px;
-    }
-    .button:hover { background-color: #ddd; }
+      /* ボタン */
+      .button {
+        text-decoration: none;
+        color: #000;
+        background: #fff;
+        border: 2px solid #3f51b5;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 4px 8px rgba(0,0,0,.1);
+      }
+      .button:hover { background: #eee; }
 
-    .container {
-      max-width: 70%;
-      margin: 40px auto;
-      padding: 30px;
-      background: #ffffff;
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+      /* メインコンテナ */
+      .container {
+        max-width: 80%;
+        margin: 30px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.1);
+      }
 
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    .create-workspace-link {
-      text-align: center;
-      padding: 14px 24px;
-      background-color: #ffffff;
-      color: #000;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border: 1px solid #eee;
-      transition: background-color 0.2s;
-    }
-    .create-workspace-link:hover { background-color: #f0f0f0; }
+      /* ツールバー */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .create-workspace-link {
+        padding: 10px 20px;
+        background: #007acc;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .create-workspace-link:hover { background: #005fa3; }
+      .sort-container select, .search-container input {
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
 
-    .sort-container select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+      /* ワークスペースカード */
+      .workspace-list { list-style: none; padding: 0; margin: 0; }
+      .workspace-card {
+        background: #f5faff;
+        border: 1px solid #007acc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .workspace-title { font-weight: bold; font-size: 18px; color: #007acc; }
+      .workspace-meta { font-size: 12px; color: #666; margin-top: 4px; }
+      .workspace-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .workspace-actions a {
+        background: #007acc;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        text-decoration: none;
+      }
+      .workspace-actions a:hover { background: #005fa3; }
+      .delete-btn { background: #e53935 !important; }
+      .edit-btn { background: #4caf50 !important; }
+      .edit-btn:hover { background: #388e3c !important; }
 
-    .workspace-list { list-style: none; padding: 0; }
-    .workspace-card {
-      background: #f5faff;
-      border: 2px solid #007acc;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .workspace-title {
-      font-size: 20px;
-      font-weight: bold;
-      color: #007acc;
-      word-break: break-all;
-      margin: 0;
-    }
-    .workspace-meta {
-      color: #666;
-      font-size: 12px;
-      margin-top: 6px;
-    }
-    .workspace-actions { display: flex; gap: 10px; }
-    .workspace-actions a {
-      background-color: #007acc;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .workspace-actions a:hover { background-color: #005fa3; }
-    .delete-btn { background-color: #e53935; }
-    .edit-btn { background-color: #4caf50; }
-    .edit-btn:hover { background-color: #388e3c; }
+      /* 件数表示・ページネーション */
+      .range-info { text-align: center; margin: 12px 0; font-size: 14px; color: #333; }
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+      .pagination a, .pagination span {
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        text-decoration: none;
+        color: #333;
+        background: #fafafa;
+      }
+      .pagination a:hover { background: #f0f0f0; }
+      .pagination .current {
+        background: #3f51b5;
+        color: #fff;
+        border-color: #3f51b5;
+      }
+      .pagination .disabled { opacity: .45; pointer-events: none; }
 
-    .toast {
-      position: fixed; top: 30px; right: 30px; background-color: #007acc;
-      color: #fff; padding: 12px 20px; border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s; z-index: 1000;
-    }
-    .toast.show { opacity: 1; }
+      /* トースト通知 */
+      .toast {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        background-color: #007acc;
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        opacity: 0;
+        transition: opacity 0.5s;
+        z-index: 1000;
+      }
+      .toast.show { opacity: 1; }
 
-    #scrollTopBtn {
-      display: none; position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
-      background: #ff8c00; color: #fff; align-items: center; justify-content: center; font-size: 22px;
-      cursor: pointer; border: none; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25); z-index: 999; transition: transform 0.2s;
-    }
-    #scrollTopBtn:hover { transform: scale(1.05); background-color: #ffa64d; }
+      /* スクロールトップ */
+      #scrollTopBtn {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background: #007acc;
+        color: #fff;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        cursor: pointer;
+        border: none;
+        clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        z-index: 999;
+        transition: transform 0.2s;
+      }
+      #scrollTopBtn:hover { transform: scale(1.05); background-color: #007acc; }
+
+      /* レスポンシブ */
+      @media (max-width: 768px) {
+        .header { padding: 16px 20px; flex-direction: column; align-items: flex-start; gap: 8px; }
+        .header-right { width: 100%; display: flex; gap: 8px; }
+        .header-right .button { flex: 1; padding: 10px; font-size: 13px; }
+
+        .container { max-width: 94%; margin: 20px auto; padding: 20px; }
+        .toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
+        .search-container { width: 100%; display: flex; gap: 8px; }
+        .search-container input { flex: 1; }
+        .workspace-card { flex-direction: column; align-items: stretch; }
+        .workspace-actions { justify-content: flex-end; }
+      }
+
+      @media (max-width: 480px) {
+        .workspace-title { font-size: 16px; }
+        .workspace-meta { font-size: 11px; }
+        #scrollTopBtn { width: 44px; height: 44px; font-size: 18px; }
+      }
+
   </style>
 </head>
 <body>
 
   <header class="header">
     <div class="header-left">
-      <h2 style="margin:0;">企業学生間共有フォーム</h2>
+      <h3 style="margin:0;">企業学生間共有フォーム</h3>
       <div class="role-badge">
         <?php
           if (!empty($_SESSION['role'])) {
-            echo $_SESSION['role'] === 'student' ? '学生として作業中です' :
-                 ($_SESSION['role'] === 'company' ? '企業として作業中です' : '役割未設定');
+            echo $_SESSION['role'] === 'student' ? '学生として作業中です'
+                 : ($_SESSION['role'] === 'company' ? '企業として作業中です' : '役割未設定');
           } else {
             echo '役割未設定';
           }
@@ -196,21 +282,31 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
     </div>
     <div class="header-right" style="display:flex; gap:16px;">
       <?php if (!$is_admin): ?>
-        <a href="admin_login.php" class="button">管理者として作業を開始する</a>
+        <a href="./admin/admin_login.php" class="button">管理者として作業を開始する</a>
       <?php else: ?>
-        <a href="admin_logout.php" class="button">管理者モードを終了する</a>
+        <a href="./admin/admin_logout.php" class="button">管理者モードを終了する</a>
       <?php endif; ?>
       <a href="return_to_selection.php" class="button return-btn">選択に戻る</a>
     </div>
   </header>
 
   <main class="container">
-    <!-- ツールバー：作成ボタン + 並べ替え -->
     <div class="toolbar">
-      <a href="create-workspace.html" class="create-workspace-link">新規ワークスペース作成</a>
+      <a href="./workspace/create-workspace.html" class="create-workspace-link">＋ 新規ワークスペース</a>
 
+      <!-- 検索フォーム -->
+      <form method="get" action="top.php" class="search-container" style="display:flex; gap:8px;">
+        <input type="text" name="q" placeholder="名前で検索" value="<?= htmlspecialchars($q) ?>">
+        <button type="submit" class="button">検索</button>
+        <?php if ($q !== ''): ?>
+          <a href="top.php" class="button" style="background:#eee;">リセット</a>
+        <?php endif; ?>
+      </form>
+
+      <!-- 並べ替え -->
       <div class="sort-container" style="margin-left:auto;">
         <form method="get" action="top.php">
+          <?php if ($q !== ''): ?><input type="hidden" name="q" value="<?= htmlspecialchars($q) ?>"><?php endif; ?>
           <label for="sort" style="margin-right:8px;">並べ替え:</label>
           <select name="sort" id="sort" onchange="this.form.submit()">
             <option value="newest"    <?= $sort==='newest'?'selected':'' ?>>新しい順</option>
@@ -218,34 +314,75 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
             <option value="name_asc"  <?= $sort==='name_asc'?'selected':'' ?>>名前順 (A→Z)</option>
             <option value="name_desc" <?= $sort==='name_desc'?'selected':'' ?>>名前順 (Z→A)</option>
           </select>
+          <input type="hidden" name="page" value="1">
         </form>
       </div>
     </div>
 
-    <ul class="workspace-list">
-      <?php foreach ($workspaces as $ws): ?>
-        <li class="workspace-card">
-          <div>
-            <div class="workspace-title"><?= htmlspecialchars($ws['name']) ?></div>
-            <div class="workspace-meta">
-              作成日時: <?= htmlspecialchars($ws['created_at']) ?>
+    <?php if ($total === 0): ?>
+      <p>該当するワークスペースはありません。</p>
+    <?php else: ?>
+      <ul class="workspace-list">
+        <?php foreach ($workspaces as $ws): ?>
+          <li class="workspace-card">
+            <div>
+              <div class="workspace-title"><?= htmlspecialchars($ws['name']) ?></div>
+              <div class="workspace-meta">作成日時: <?= htmlspecialchars($ws['created_at']) ?></div>
             </div>
-          </div>
-          <div class="workspace-actions">
-            <a href="workspace.php?id=<?= $ws['id'] ?>">開く</a>
-            <?php if ($is_admin): ?>
-              <a class="edit-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">編集</a>
-              <a class="delete-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>
-            <?php endif; ?>
-          </div>
-        </li>
-      <?php endforeach; ?>
-    </ul>
+            <div class="workspace-actions">
+              <a href="workspace.php?id=<?= $ws['id'] ?>">開く</a>
+              <?php if ($is_admin): ?>
+                <a class="edit-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">編集</a>
+                <a class="delete-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>
+              <?php endif; ?>
+            </div>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+
+      <!-- 件数表示 -->
+      <div class="range-info">
+        <?php
+          $from = $offset + 1;
+          $to   = min($offset + $perPage, $total);
+          echo "全 {$total} 件中 {$from} ～ {$to} 件を表示";
+        ?>
+      </div>
+
+      <!-- ページネーション -->
+      <nav class="pagination" aria-label="ページナビゲーション">
+        <?php
+          // 前へ
+          if ($page > 1) {
+            echo '<a href="'. build_query(['page'=>$page-1]) .'">‹ 前へ</a>';
+          } else {
+            echo '<span class="disabled">‹ 前へ</span>';
+          }
+
+          // 全ページ番号
+          for ($p = 1; $p <= $totalPages; $p++) {
+            if ($p == $page) {
+              echo '<span class="current">'. $p .'</span>';
+            } else {
+              echo '<a href="'. build_query(['page'=>$p]) .'">'. $p .'</a>';
+            }
+          }
+
+          // 次へ
+          if ($page < $totalPages) {
+            echo '<a href="'. build_query(['page'=>$page+1]) .'">次へ ›</a>';
+          } else {
+            echo '<span class="disabled">次へ ›</span>';
+          }
+        ?>
+      </nav>
+    <?php endif; ?>
 
     <button id="scrollTopBtn" aria-label="ページの先頭へ戻る">↑</button>
   </main>
 
 <script>
+  // トースト（右上にポップ → 3秒で消える）
   function showToast(message, type = 'info') {
     const toast = document.createElement("div");
     toast.className = "toast";
@@ -275,14 +412,14 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
       btn.style.display = window.scrollY > 300 ? "flex" : "none";
     });
 
-    // 削除（管理者のみボタンが出る）
+    // 削除（管理者のみ）
     document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", e => {
         e.preventDefault();
         const id = btn.dataset.id;
         const name = btn.dataset.name;
         if (confirm(`ワークスペース 「${name}」 を削除しますか？`)) {
-          fetch("delete_workspace.php", {
+          fetch("./workspace/delete_workspace.php", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -294,6 +431,7 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
           .then(data => {
             if (data.success) {
               localStorage.setItem("notification", `ワークスペース「${name}」を削除しました`);
+              // 現在の検索・並べ替え・ページ状態を維持したまま再読込
               location.reload();
             } else {
               alert(data.error || "削除に失敗しました");
@@ -312,7 +450,7 @@ $csrf_token = $is_admin && !empty($_SESSION['csrf_token']) ? $_SESSION['csrf_tok
         const oldName = btn.dataset.name;
         const newName = prompt(`「${oldName}」の新しい名前を入力してください：`, oldName);
         if (newName && newName !== oldName) {
-          fetch("update_workspace.php", {
+          fetch("./workspace/update_workspace.php", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
