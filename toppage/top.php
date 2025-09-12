@@ -329,6 +329,7 @@ function build_query(array $add = []) {
               <div class="workspace-title"><?= htmlspecialchars($ws['name']) ?></div>
               <div class="workspace-meta">作成日時: <?= htmlspecialchars($ws['created_at']) ?></div>
             </div>
+            <!-- workspace.phpをframe.htmlに置き換える-->
             <div class="workspace-actions">
               <a href="workspace.php?id=<?= $ws['id'] ?>">開く</a>
               <?php if ($is_admin): ?>
