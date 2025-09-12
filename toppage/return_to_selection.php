@@ -12,10 +12,8 @@ if (ini_get('session.use_cookies')) {
   setcookie(session_name(), '', time()-42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
 }
 
-// 完全終了
 session_destroy();
 
-// ここでスクリプト返してもOK（簡易実装なら以下）
 echo "<script>
   try{
     localStorage.removeItem('userRole');

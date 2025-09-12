@@ -12,7 +12,6 @@
       --space-xl: 32px;
       --space-lg: 24px;
       --space-md: 16px;
-      --space-sm: 10px;
       --btn-h: 180px; 
     }
 
@@ -26,13 +25,13 @@
       background-position: center;
       background-repeat: no-repeat;
       min-height: 100svh; 
-
       display: flex;
       justify-content: center;
       align-items: center;
       padding: var(--space-xl) var(--space-md);
     }
 
+    /* コンテナ */
     .container {
       background: rgba(255,255,255,0.96);
       border: 1px solid #ddd;
@@ -41,7 +40,6 @@
       max-width: 780px;
       padding: var(--space-xl);
       box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-
       display: flex;
       flex-direction: column;
       gap: var(--space-lg);
@@ -96,14 +94,8 @@
     }
 
     /* 役割ごとの色 */
-    .button.company {
-      background: #e3f2fd;
-      color: #0d47a1;
-    }
-    .button.student {
-      background: #e8f5e9;
-      color: #1b5e20;
-    }
+    .button.company { background: #e3f2fd; color: #0d47a1; }
+    .button.student { background: #e8f5e9; color: #1b5e20; }
 
     form#role-form { display: none; }
 
@@ -133,11 +125,6 @@
       .button { height: 120px; }
       .title { font-size: 17px; }
     }
-
-    /* 低モーション環境 */
-    @media (prefers-reduced-motion: reduce) {
-      * { transition: none !important; animation: none !important; }
-    }
   </style>
 </head>
 <body>
@@ -148,7 +135,6 @@
       <a href="#" class="button company" id="start-company" aria-label="企業として作業を開始する">
         企業として<br>作業を開始する
       </a>
-
       <a href="#" class="button student" id="start-student" aria-label="学生として作業を開始する">
         学生として<br>作業を開始する
       </a>
@@ -163,20 +149,18 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // 選択→通知を積んでからサーバーへPOST（セッションにroleを保存）
-    function go(role, e){
+    function post_server(role, e){
       e.preventDefault();
       const label = role === 'company' ? '企業' : '学生';
       localStorage.setItem("notification", `「${label}」として作業を開始します`);
-      localStorage.setItem("userRole", role); 
+      localStorage.setItem("userRole", role);
       document.getElementById('role-input').value = role;
       document.getElementById('role-form').submit();
     }
 
-    document.getElementById('start-company').addEventListener('click', e => go('company', e));
-    document.getElementById('start-student').addEventListener('click', e => go('student', e));
+    document.getElementById('start-company').addEventListener('click', e => post_server('company', e));
+    document.getElementById('start-student').addEventListener('click', e => post_server('student', e));
 
-    // top.php から未選択で戻されたときの警告
     document.addEventListener('DOMContentLoaded', () => {
       const warn = localStorage.getItem('selectionWarning');
       if (warn) {
@@ -185,7 +169,6 @@
       }
     });
 
-    // トースト
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toast');
       toast.textContent = message;
