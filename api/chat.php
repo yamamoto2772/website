@@ -14,6 +14,18 @@ if (in_array($origin, $allowed_origins, true)) {
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> 6bdb6c2 (中村1)
+=======
+
+>>>>>>> 0aa4cfb (aa)
+=======
+
+>>>>>>> 876ccf20f5da6648d6e8e721b34a60a130e626c5
 // OPTIONS プリフライトリクエストへの対応
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
