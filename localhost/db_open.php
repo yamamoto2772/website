@@ -1,7 +1,7 @@
 <?php
    $dbserver = "localhost";
    #$dbserver = "mysql310.phy.lolipop.lan";
-   $dbname = "Corelista";
+   $dbname = "laa1617845-mydb";
    $dbuser = "LAA1617845";
    $dbpasswd = "dbpasswd"; 
 
