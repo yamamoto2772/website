@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>お知らせ新規作成</title>
+  <style>
+    .p-4 { padding: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .w-full { width: 100%; }
+    .border { border: 1px solid #ccc; }
+    .rounded { border-radius: 0.25rem; }
+    .p-2 { padding: 0.5rem; }
+    .flex { display: flex; }
+    .gap-2 { gap: 0.5rem; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .bg-gray-300 { background-color: #d1d5db; }
+    .text-white { color: white; }
+    .hover\:bg-blue-600:hover { background-color: #2563eb; }
+    .hover\:bg-gray-400:hover { background-color: #9ca3af; }
+  </style>
+</head>
+<body>
+
+<div class="p-4">
+  <h1 class="text-xl font-bold mb-4">お知らせ新規作成</h1>
+  <form id="announcement-form">
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">タイトル</label>
+      <input type="text" name="title" class="w-full border rounded p-2" required>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">内容</label>
+      <textarea name="content" class="w-full border rounded p-2" rows="5" required></textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">画像URL（任意）</label>
+      <input type="text" name="image" class="w-full border rounded p-2" placeholder="http://...">
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        投稿
+      </button>
+      <button type="button" onclick="window.location.href='announcement.html'" 
+              class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+        キャンセル
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("announcement-form");
+  if (form) {
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      console.log("submitイベント発火");
+
+      const data = {
+        title: form.title.value,
+        content: form.content.value,
+        image: form.image.value,
+        user_type: "学生"
+      };
+      console.log("送信データ:", data);
+
+      try {
+        const res = await fetch("http://localhost/team4/website/api/announcement.php?action=create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        console.log("APIレスポンス:", result);
+
+        if (result.success) {
+          alert("✅ 投稿に成功しました！");
+          window.location.href = "announcement.html";
+        } else {
+          alert("❌ 投稿失敗: " + (result.error || "不明なエラー"));
+        }
+      } catch (err) {
+        alert("❌ 通信エラー: " + err.message);
+        console.error(err);
+      }
+    });
+  } else {
+    console.error("フォームが見つかりません");
+  }
+</script>
+
+</body>
+</html>
