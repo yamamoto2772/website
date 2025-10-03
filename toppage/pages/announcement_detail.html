@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>お知らせ詳細</title>
+  <style>
+    .p-4 { padding: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .text-xl { font-size: 1.25rem; }
+    .font-bold { font-weight: bold; }
+    .text-sm { font-size: 0.875rem; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-600 { color: #4b5563; }
+    .rounded { border-radius: 0.25rem; }
+    .max-w-xs { max-width: 20rem; }
+    .bg-gray-300 { background-color: #d1d5db; }
+    .hover\:bg-gray-400:hover { background-color: #9ca3af; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="p-4">
+  <h1 class="text-xl font-bold mb-2" id="announcement-title">タイトル読み込み中…</h1>
+  <p id="announcement-content" class="mb-4"></p>
+  <p id="announcement-user" class="text-sm text-gray-600"></p>
+  <p id="announcement-date" class="text-sm text-gray-500 mb-4"></p>
+  <div id="announcement-image"></div>
+
+  <button onclick="loadPage('announcement.html')" 
+          class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+    一覧に戻る
+  </button>
+</div>
+
+<script>
+async function loadAnnouncementDetail(idFromParent = null) {
+  // URLからidを取得
+  let id = idFromParent;
+  if (!id) {
+    const params = new URLSearchParams(location.search);
+    id = params.get("id");
+  }
+
+  if (!id) {
+    console.error("idが取得できません");
+    document.getElementById("announcement-title").textContent = "詳細が見つかりません";
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost/team4/website/api/announcement.php?action=detail&id=${id}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      console.error(data.error);
+      document.getElementById("announcement-title").textContent = "詳細が取得できません";
+      return;
+    }
+
+    const ann = data.announcement;
+    document.getElementById("announcement-title").textContent = ann.title || "(タイトルなし)";
+    document.getElementById("announcement-content").textContent = ann.content || "(内容なし)";
+    document.getElementById("announcement-user").textContent = "投稿者: " + (ann.user_type || "不明");
+    document.getElementById("announcement-date").textContent = "投稿日: " + (ann.created_at || "-");
+
+    if (ann.image) {
+      document.getElementById("announcement-image").innerHTML =
+        `<img src="${ann.image}" class="max-w-xs rounded mt-2">`;
+    } else {
+      document.getElementById("announcement-image").innerHTML = "";
+    }
+  } catch (err) {
+    console.error("詳細取得エラー:", err);
+    document.getElementById("announcement-title").textContent = "詳細取得中にエラーが発生しました";
+  }
+}
+
+// SPA対応: window経由で呼び出せるように
+window.initAnnouncementDetail = loadAnnouncementDetail;
+
+// ページ直接アクセス時は自動で実行
+if (!window.idFromParent) {
+  loadAnnouncementDetail();
+}
+</script>
+
+</body>
+</html>
