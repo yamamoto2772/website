@@ -1,0 +1,44 @@
+<div class="p-4">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-xl font-bold">お知らせ一覧</h1>
+    <button 
+      onclick="loadPage('announcement_form.html')" 
+      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      新規作成
+    </button>
+  </div>
+
+  <ul id="announcement-list" class="space-y-2"></ul>
+</div>
+
+<script>
+async function loadAnnouncements() {
+  try {
+    const res = await fetch("http://localhost/team4/website/api/announcement.php?action=list");
+    const data = await res.json();
+
+    if (!data.success) {
+      console.error(data.error);
+      return;
+    }
+
+    const list = document.getElementById("announcement-list");
+    list.innerHTML = "";
+
+    data.announcements.forEach(item => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <a href="#" onclick="loadPage('announcement_detail.html?id=${item.id}')" 
+           class="block p-2 border rounded hover:bg-gray-50">
+          <div class="font-bold">${item.title}</div>
+          <div class="text-sm text-gray-500">${item.created_at}</div>
+        </a>`;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+loadAnnouncements();
+</script>
