@@ -54,7 +54,7 @@ iframe#main-frame { width:100%; height:100%; border:none; }
 <button onclick="loadPage('chat.php?id=<?= $workspace_id ?>')"><i class="fa-solid fa-comments"></i> チャットフォーム</button>
 <button onclick="loadPage('task.html')"><i class="fa-solid fa-tasks"></i> 課題提示フォーム</button>
 <button onclick="loadPage('result.html')"><i class="fa-solid fa-upload"></i> 成果物提出フォーム</button>
-<button onclick="loadPage('a.html')"><i class="fa-solid fa-envelope"></i> 管理者への要望</button>
+<button onclick="loadPage('request.html')"><i class="fa-solid fa-envelope"></i> 管理者への要望</button>
 </nav>
 
 <main>
