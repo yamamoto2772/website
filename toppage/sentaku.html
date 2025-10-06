@@ -7,125 +7,135 @@
   <link rel="icon" href="../img/favicon.png" type="image/png" sizes="32x32">
 
   <style>
-    :root{
-      --radius: 12px;
-      --space-xl: 32px;
-      --space-lg: 24px;
-      --space-md: 16px;
-      --btn-h: 180px; 
-    }
+  :root{
+    --radius: 12px;
+    --space-xl: 32px;
+    --space-lg: 24px;
+    --space-md: 16px;
+    --btn-h: 180px; 
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
 
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif;
-      background-image: url('../img/background.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      min-height: 100svh; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: var(--space-xl) var(--space-md);
-    }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif;
+    background-image: url('../img/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100svh; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-xl) var(--space-md);
+  }
 
-    /* コンテナ */
-    .container {
-      background: rgba(255,255,255,0.96);
-      border: 1px solid #ddd;
-      border-radius: var(--radius);
-      width: 100%;
-      max-width: 780px;
-      padding: var(--space-xl);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-lg);
-    }
+  /* コンテナ */
+  .container {
+    background: #f5f5f5; /* 💡チャットと統一：淡いグレー */
+    border: 1px solid #ddd;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 780px;
+    padding: var(--space-xl);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
 
-    .title {
-      width: 100%;
-      height: 60px;
-      border: 2px solid #3f51b5;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      font-weight: 800;
-      text-align: center;
-      background: #3f51b5;
-      color: #fff;
-      margin: 0 auto;
-    }
+  .title {
+    width: 100%;
+    height: 60px;
+    border: 2px solid #3f51b5;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+    background: #3f51b5;
+    color: #fff;
+    margin: 0 auto;
+  }
 
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-lg);
-    }
+  .buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+  }
 
-    .button {
-      display: grid;
-      place-items: center;
-      text-align: center;
-      text-decoration: none;
-      color: #000;
-      border: none;
-      border-radius: var(--radius);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      font-size: 18px;
-      font-weight: 600;
-      height: var(--btn-h);
-      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-      user-select: none;
-      cursor: pointer;
-    }
-    .button:hover {
-      filter: brightness(.97);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .button:active { transform: translateY(0); }
-    .button:focus-visible {
-      outline: 3px solid #3f51b5;
-      outline-offset: 3px;
-    }
+  .button {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-size: 18px;
+    font-weight: 600;
+    height: var(--btn-h);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    user-select: none;
+    cursor: pointer;
+  }
 
-    /* 役割ごとの色 */
-    .button.company { background: #e3f2fd; color: #0d47a1; }
-    .button.student { background: #e8f5e9; color: #1b5e20; }
+  /* 役割ごとの色（文字色と背景を調整） */
+  .button.company {
+    background: #e8f5e9;  /* 💡企業：淡い緑 */
+    color: #2e7d32;
+  }
 
-    form#role-form { display: none; }
+  .button.student {
+    background: #e3f2fd;  /* 💡学生：淡い青 */
+    color: #1565c0;
+  }
 
-    /* トースト */
-    .toast {
-      position: fixed; top: 30px; right: 30px;
-      background: #007acc; color: #fff;
-      padding: 12px 20px; border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.15);
-      opacity: 0; transform: translateY(-4px);
-      transition: opacity .25s ease, transform .25s ease;
-      z-index: 1000;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
+  .button:hover {
+    filter: brightness(.97);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 
-    /* タブレット以下 */
-    @media (max-width: 768px) {
-      .container { padding: var(--space-lg); gap: var(--space-md); }
-      .title { height: 56px; font-size: 18px; }
-      .buttons { gap: var(--space-md); }
-      .button { font-size: 16px; height: 150px; }
-    }
+  .button:active { transform: translateY(0); }
+  .button:focus-visible {
+    outline: 3px solid #3f51b5;
+    outline-offset: 3px;
+  }
 
-    /* スマホ */
-    @media (max-width: 520px) {
-      .buttons { grid-template-columns: 1fr; }
-      .button { height: 120px; }
-      .title { font-size: 17px; }
-    }
-  </style>
+  form#role-form { display: none; }
+
+  /* トースト */
+  .toast {
+    position: fixed; top: 30px; right: 30px;
+    background: #007acc; color: #fff;
+    padding: 12px 20px; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* タブレット以下 */
+  @media (max-width: 768px) {
+    .container { padding: var(--space-lg); gap: var(--space-md); }
+    .title { height: 56px; font-size: 18px; }
+    .buttons { gap: var(--space-md); }
+    .button { font-size: 16px; height: 150px; }
+  }
+
+  /* スマホ */
+  @media (max-width: 520px) {
+    .buttons { grid-template-columns: 1fr; }
+    .button { height: 120px; }
+    .title { font-size: 17px; }
+  }
+</style>
+
 </head>
 <body>
   <div class="container" role="main">

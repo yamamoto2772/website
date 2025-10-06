@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: 127.0.0.1
--- 生成日時: 2025-10-06 02:43:17
+-- 生成日時: 2025-10-06 02:42:52
 -- サーバのバージョン： 10.4.32-MariaDB
 -- PHP のバージョン: 8.2.12
 
@@ -24,16 +24,17 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `questions`
+-- テーブルの構造 `assignments`
 --
 
-CREATE TABLE `questions` (
+CREATE TABLE `assignments` (
   `id` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `asker_type` enum('student','company') NOT NULL,
-  `image_path` varchar(512) DEFAULT NULL,
+  `titles` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `creator_type` enum('student','company') NOT NULL,
+  `due_date` date DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `image_path` varchar(512) DEFAULT NULL,
   `workspace_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -42,9 +43,9 @@ CREATE TABLE `questions` (
 --
 
 --
--- テーブルのインデックス `questions`
+-- テーブルのインデックス `assignments`
 --
-ALTER TABLE `questions`
+ALTER TABLE `assignments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `workspace_id` (`workspace_id`);
 
@@ -53,9 +54,9 @@ ALTER TABLE `questions`
 --
 
 --
--- テーブルの AUTO_INCREMENT `questions`
+-- テーブルの AUTO_INCREMENT `assignments`
 --
-ALTER TABLE `questions`
+ALTER TABLE `assignments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -63,10 +64,10 @@ ALTER TABLE `questions`
 --
 
 --
--- テーブルの制約 `questions`
+-- テーブルの制約 `assignments`
 --
-ALTER TABLE `questions`
-  ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`);
+ALTER TABLE `assignments`
+  ADD CONSTRAINT `assignments_ibfk_1` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -2,9 +2,9 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- ホスト: mysql325.phy.lolipop.lan
--- 生成日時: 2025 年 7 月 15 日 10:57
--- サーバのバージョン： 8.0.35
+-- ホスト: 127.0.0.1
+-- 生成日時: 2025-10-06 02:43:03
+-- サーバのバージョン： 10.4.32-MariaDB
 -- PHP のバージョン: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- データベース: `LAA1617951-team4`
+-- データベース: `corelista`
 --
 
 -- --------------------------------------------------------
@@ -28,12 +28,13 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `message` (
-  `チャットID` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `チャットルームID` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `送信者識別` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `メッセージ` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `画像` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `作成日時` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
+  `id` int(11) NOT NULL COMMENT 'チャットID',
+  `room_id` int(11) NOT NULL COMMENT 'チャットルームID',
+  `sender_type` enum('student','company','admin') NOT NULL COMMENT '送信者識別',
+  `content` varchar(512) DEFAULT NULL COMMENT 'メッセージ本文',
+  `image_path` varchar(512) DEFAULT NULL COMMENT '画像パス',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp() COMMENT '作成日時',
+  `workspace_id` int(11) NOT NULL COMMENT 'ワークスペースID'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -44,7 +45,31 @@ CREATE TABLE `message` (
 -- テーブルのインデックス `message`
 --
 ALTER TABLE `message`
-  ADD PRIMARY KEY (`チャットID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_message_room_id` (`room_id`),
+  ADD KEY `idx_message_workspace_id` (`workspace_id`),
+  ADD KEY `idx_message_created_at` (`created_at`);
+
+--
+-- ダンプしたテーブルの AUTO_INCREMENT
+--
+
+--
+-- テーブルの AUTO_INCREMENT `message`
+--
+ALTER TABLE `message`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'チャットID';
+
+--
+-- ダンプしたテーブルの制約
+--
+
+--
+-- テーブルの制約 `message`
+--
+ALTER TABLE `message`
+  ADD CONSTRAINT `fk_message_room` FOREIGN KEY (`room_id`) REFERENCES `chat_room` (`room_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_message_workspace` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = hasQuery ? page.split('?')[0] : page;
     const qs = hasQuery ? page.split('?')[1] : '';
 
+      const path = file.startsWith('pages/') ? file : 'pages/${file}';
+
     try {
       const res = await fetch(`pages/${file}`);
       if (!res.ok) throw new Error('読み込み失敗');

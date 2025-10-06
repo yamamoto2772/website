@@ -2,9 +2,9 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- ホスト: mysql325.phy.lolipop.lan
--- 生成日時: 2025 年 7 月 15 日 10:57
--- サーバのバージョン： 8.0.35
+-- ホスト: 127.0.0.1
+-- 生成日時: 2025-10-06 02:42:57
+-- サーバのバージョン： 10.4.32-MariaDB
 -- PHP のバージョン: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- データベース: `LAA1617951-team4`
+-- データベース: `corelista`
 --
 
 -- --------------------------------------------------------
@@ -28,13 +28,14 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `deliverables` (
-  `成果ID` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `タイトル` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `内容` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `投稿者種別` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `添付画像_任意_` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `成果物ファイルパス` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `提出日時` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
+  `id` int(11) NOT NULL,
+  `titles` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `submitter_type` enum('student','company') NOT NULL,
+  `image_path` varchar(512) DEFAULT NULL,
+  `file_path` varchar(512) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `workspace_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -45,7 +46,28 @@ CREATE TABLE `deliverables` (
 -- テーブルのインデックス `deliverables`
 --
 ALTER TABLE `deliverables`
-  ADD PRIMARY KEY (`成果ID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `workspace_id` (`workspace_id`);
+
+--
+-- ダンプしたテーブルの AUTO_INCREMENT
+--
+
+--
+-- テーブルの AUTO_INCREMENT `deliverables`
+--
+ALTER TABLE `deliverables`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- ダンプしたテーブルの制約
+--
+
+--
+-- テーブルの制約 `deliverables`
+--
+ALTER TABLE `deliverables`
+  ADD CONSTRAINT `deliverables_ibfk_1` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

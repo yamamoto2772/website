@@ -331,7 +331,7 @@ function build_query(array $add = []) {
             </div>
             <!-- workspace.phpをframe.htmlに置き換える-->
             <div class="workspace-actions">
-              <a href="workspace.php?id=<?= $ws['id'] ?>">開く</a>
+              <a href="../workspace.php?id=<?= $ws['id'] ?>">開く</a>
               <?php if ($is_admin): ?>
                 <a class="edit-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">編集</a>
                 <a class="delete-btn" href="#" data-id="<?= $ws['id'] ?>" data-name="<?= htmlspecialchars($ws['name']) ?>">削除</a>

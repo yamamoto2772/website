@@ -92,6 +92,14 @@ main {
   word-wrap: break-word;
 }
 
+.message-student{
+  color: #1976d2;
+} 
+
+.message-company{
+  color: #388e3c;
+}
+
 .student {
   background-color: #fff;
   align-self: flex-start;
