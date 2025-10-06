@@ -1,9 +1,9 @@
 <?php
    $dbserver = "localhost";
    #$dbserver = "mysql310.phy.lolipop.lan";
-   $dbname = "Corelista";
-   $dbuser = "LAA1617845";
-   $dbpasswd = "dbpasswd"; 
+   $dbname = "team4";
+   $dbuser = "root";
+   $dbpasswd = ""; 
 
 $opt = [
 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
