@@ -113,7 +113,7 @@ if (!$workspace) {
   </header>
 
   <nav>
-    <button onclick="loadPage('home.html')">ワークスペーストップ</button>
+    <button onclick="loadPage('calendar.php?id=<?= $workspace_id ?>')">ワークスペーストップ</button>
     <button onclick="loadPage('question.php?id=<?= $workspace_id ?>')">質問フォーム</button>
     <button onclick="loadPage('chat.html')">チャットフォーム</button>
     <button onclick="loadPage('task.html')">課題提示フォーム</button>
