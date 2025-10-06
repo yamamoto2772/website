@@ -10,17 +10,26 @@ if(!$workspaceId){
     return;
 }
 
+// 投稿後のステータスとメッセージを GET パラメータから取得
+$status = $_GET['status'] ?? '';
+$msg = $_GET['msg'] ?? '';
+
 // 質問一覧取得
 // SQLインジェクション対策済み (PDO プリペアドステートメント)
 // ワークスペース識別子を id に統一
 $stmt = $pdo->prepare("SELECT * FROM questions WHERE id=? ORDER BY 作成日時 DESC");
 $stmt->execute([$workspaceId]);
 $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-?>
 
+?>
 <style>
 /* CSSは変更ありませんが、見やすいように一部省略 */
 .container { max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; }
+/* メッセージ表示用のスタイル */
+.message { padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: 600; border: 1px solid;}
+.message.success-message { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+.message.error-message { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;}
+
 .post-button {
     display: inline-block; margin-bottom: 20px; padding: 10px 16px;
     background-color: #007bff; color: white; border-radius: 6px; border: none;
@@ -32,9 +41,16 @@ $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 /* ... その他のスタイル定義 ... */
 .chat-container { display:none; margin-top:10px; background:#fff; border-radius:8px; padding:15px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
 .chat-messages { max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px; background:#f9f9f9; }
+.question-image { max-width: 100%; height: auto; margin-top: 10px; border: 1px solid #ddd; }
 </style>
 
 <div class="container">
+    
+    <?php if ($status === 'success' && $msg): ?>
+        <div class="message success-message"><?= htmlspecialchars(urldecode($msg)) ?></div>
+    <?php elseif ($status === 'error' && $msg): ?>
+        <div class="message error-message"><?= htmlspecialchars(urldecode($msg)) ?></div>
+    <?php endif; ?>
     <button class="post-button" onclick="loadPage('insert_question.php?id=<?= htmlspecialchars($workspaceId) ?>')">質問を投稿する</button>
 
     <div class="question-list" id="question-list">
@@ -75,7 +91,7 @@ function deleteQuestion(id){
     if(!confirm('本当にこの質問を削除しますか？')) return;
     
     // 【重要】api/delete_question.php で、このユーザーに削除権限があるかチェックしてください
-    fetch(`api/delete_question.php`,{
+    fetch(`../api/delete_question.php`,{
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded'},
         // ワークスペース識別子を id に統一
@@ -109,7 +125,7 @@ function toggleDetail(qid){
 
 // チャット読み込み
 function loadChat(qid){
-    fetch(`api/get_chats.php?質問ID=${qid}`)
+    fetch(`../api/get_chats.php?質問ID=${qid}`)
         .then(res=>res.json())
         .then(data=>{
             const chatDiv = document.getElementById('chat-messages-'+qid);
@@ -167,7 +183,7 @@ function sendChat(qid){
     });
 }
 
-// 質問一覧更新用（今回は削除時の最適化を行ったため、この関数は事実上不要だが残しておく）
+// 質問一覧更新用（現在は削除時の最適化を行っているため、この関数は事実上不要だが残しておく）
 function loadQuestions(){
     // 親ページで定義された loadPage() 関数を呼び出す
     if(typeof loadPage === 'function'){
