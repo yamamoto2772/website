@@ -63,9 +63,9 @@ error_log('ROW=' . json_encode(['id' => $workspaceId, 'name' => $workspaceName],
     <?php
       if (!empty($_SESSION['role'])) {
         echo $_SESSION['role'] === 'student'
-          ? '<span style="color:#a5d6a7;">学生として作業中です</span>'
+          ? '<span style="color:#90caf9;">学生として作業中です</span>'
           : ($_SESSION['role'] === 'company'
-              ? '<span style="color:#90caf9;">企業として作業中です</span>'
+              ? '<span style="color:#a5d6a7;">企業として作業中です</span>'
               : '役割未設定');
       } else {
         echo '役割未設定';
