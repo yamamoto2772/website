@@ -77,7 +77,7 @@ error_log('ROW=' . json_encode(['id' => $workspaceId, 'name' => $workspaceName],
 
 
   <nav>
-    <button data-page="home.html">ワークスペーストップ</button>
+    <button data-page="./toppage/calender.php">ワークスペーストップ</button>
     <button data-page="question.php">質問フォーム</button>
     <button data-page="chat.html">チャットフォーム</button>
     <button data-page="task.html">課題提示フォーム</button>
